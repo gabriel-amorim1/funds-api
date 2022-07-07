@@ -1,13 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { FinancialTransactionService } from './services/financial-transaction.service';
-import { CreateFinancialTransactionDto } from './dto/create-financial-transaction.dto';
+import {
+    CreateFinancialTransactionDoc,
+    CreateFinancialTransactionDto,
+} from './dto/create-financial-transaction.dto';
 import { UpdateFinancialTransactionDto } from './dto/update-financial-transaction.dto';
 import { FinancialTransactionEntity } from './entities/financial-transaction.entity';
+import { FindAllResponse } from '../../common/interfaces';
+import { ApiBody, ApiResponse } from '@nestjs/swagger';
+import { FindAllFinancialTransactionsDto } from './dto/find-all-financial-transactions.dto';
 
 @Controller('financial-transaction')
 export class FinancialTransactionController {
     constructor(private readonly financialTransactionService: FinancialTransactionService) {}
 
+    @ApiBody({ type: CreateFinancialTransactionDoc })
+    @ApiResponse({ type: FinancialTransactionEntity })
     @Post()
     create(
         @Body() createFinancialTransactionDto: CreateFinancialTransactionDto,
@@ -16,8 +24,10 @@ export class FinancialTransactionController {
     }
 
     @Get()
-    findAll(): Promise<FinancialTransactionEntity[]> {
-        return this.financialTransactionService.findAll();
+    findAll(
+        @Query() queryParams: FindAllFinancialTransactionsDto,
+    ): Promise<FindAllResponse<FinancialTransactionEntity>> {
+        return this.financialTransactionService.findAll(queryParams);
     }
 
     @Get(':id')

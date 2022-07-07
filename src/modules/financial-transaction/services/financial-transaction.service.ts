@@ -4,6 +4,11 @@ import { UpdateFinancialTransactionDto } from '../dto/update-financial-transacti
 import { InjectRepository } from '@nestjs/typeorm';
 import { FinancialTransactionEntity } from '../entities/financial-transaction.entity';
 import { Repository } from 'typeorm';
+import { FindAllFinancialTransactionsDto } from '../dto/find-all-financial-transactions.dto';
+import { formatParamsToTypeOrmOptionsWithPaginate } from '../../../common/format';
+import { formatPaginateDataToResponse } from '../../../common/paginate';
+import { FindAllResponse } from '../../../common/interfaces';
+import { transformToCents } from '../utils/currency';
 
 @Injectable()
 export class FinancialTransactionService {
@@ -15,15 +20,27 @@ export class FinancialTransactionService {
     async create(
         createFinancialTransactionDto: CreateFinancialTransactionDto,
     ): Promise<FinancialTransactionEntity> {
-        return this.repository.save(createFinancialTransactionDto);
+        return this.repository.save({
+            ...createFinancialTransactionDto,
+            amount: transformToCents(createFinancialTransactionDto.amount),
+        });
     }
 
-    async findAll(): Promise<FinancialTransactionEntity[]> {
-        return this.repository.find();
+    async findAll(
+        queryParams: FindAllFinancialTransactionsDto,
+    ): Promise<FindAllResponse<FinancialTransactionEntity>> {
+        const options = formatParamsToTypeOrmOptionsWithPaginate(queryParams);
+
+        const [data, count] = await this.repository.findAndCount(options);
+
+        return formatPaginateDataToResponse(queryParams, {
+            data,
+            count,
+        });
     }
 
     async findOne(id: string): Promise<FinancialTransactionEntity> {
-        const financialTransactionFound = this.repository.findOne({ where: { id } });
+        const financialTransactionFound = await this.repository.findOne({ where: { id } });
 
         if (!financialTransactionFound) {
             throw new NotFoundException('Financial Transaction not found.');
@@ -38,9 +55,14 @@ export class FinancialTransactionService {
     ): Promise<FinancialTransactionEntity> {
         const financialTransactionFound = await this.findOne(id);
 
+        const amount = updateFinancialTransactionDto.amount
+            ? transformToCents(updateFinancialTransactionDto.amount)
+            : financialTransactionFound.amount;
+
         return this.repository.save({
             ...financialTransactionFound,
-            updateFinancialTransactionDto,
+            ...updateFinancialTransactionDto,
+            amount,
         });
     }
 
