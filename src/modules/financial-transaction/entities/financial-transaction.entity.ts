@@ -2,10 +2,13 @@ import {
     Column,
     CreateDateColumn,
     Entity,
+    JoinColumn,
+    ManyToOne,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
 import { IsDate, IsNotEmpty, IsNumber, IsString, IsUUID, Matches } from 'class-validator';
+import { CategoryEntity } from '../../category/entities/category.entity';
 
 @Entity('financial_transaction')
 export class FinancialTransactionEntity {
@@ -31,6 +34,11 @@ export class FinancialTransactionEntity {
     @Column({ type: 'date' })
     date: string;
 
+    @IsUUID('4')
+    @IsNotEmpty()
+    @Column('uuid')
+    category_id: string;
+
     @IsDate()
     @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;
@@ -38,4 +46,8 @@ export class FinancialTransactionEntity {
     @IsDate()
     @UpdateDateColumn({ name: 'updated_at' })
     updatedAt: Date;
+
+    @ManyToOne(() => CategoryEntity, { eager: true })
+    @JoinColumn({ name: 'category_id' })
+    category: CategoryEntity;
 }

@@ -1,5 +1,5 @@
-import { FinancialTransactionEntity } from '../modules/financial-transaction/entities/financial-transaction.entity';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { join } from 'path';
 
 export const databaseConfig: TypeOrmModuleOptions = {
     type: 'postgres',
@@ -8,6 +8,6 @@ export const databaseConfig: TypeOrmModuleOptions = {
     username: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    entities: [FinancialTransactionEntity],
+    entities: [join(__dirname, '..', 'modules/**/entities/*.entity{.ts,.js}')],
     synchronize: true,
 };
