@@ -10,7 +10,9 @@ describe('FinancialTransactionController', () => {
         const module: TestingModule = await Test.createTestingModule({
             controllers: [FinancialTransactionController],
             providers: [FinancialTransactionService],
-        }).compile();
+        })
+            .useMocker(() => ({}))
+            .compile();
 
         controller = module.get<FinancialTransactionController>(FinancialTransactionController);
     });
